@@ -1,0 +1,67 @@
+----------------------------------------------------------------------
+.:: iac-env - help ::.
+https://github.com/MarcelBraghetto/iac-env
+----------------------------------------------------------------------
+
+Welcome to Infrastructure as Code Environment - iac-env!
+
+Your working directory is mounted as /iac-env
+
+Available tools in iac-env:
+
+- vi: Basic command line text editor, useful for odd jobs ...
+
+- terraform: https://github.com/hashicorp/terraform
+    
+    This runs the Terraform CLI tool.
+    
+    Important: The 'TF_PLUGIN_CACHE_DIR' environment variable is set to
+    point at /opt/terraform-plugin-cache to avoid round tripping to
+    fetch plugins from a remote. This does mean that if other Terraform
+    plugins are required apart from the ones bundled into this environment
+    Docker image, the Docker image needs to be updated to include them and
+    a new Docker image version created.
+    
+    If you don't want to use the plugin cache, you can unset or change
+    the environment variable:
+      $> unset TF_PLUGIN_CACHE_DIR
+
+    Useful commands - most require Terraform to be initialised first:
+    
+    1. Initialise Terraform in your working dir:
+       $> terraform init
+
+    2. Run basic Terraform validation on your code:
+       $> terraform validate
+
+    3. To format all your Terraform code:
+       $> terraform fmt -recursive
+
+    4. To generate a resource graph:
+       $> terraform graph | dot -Tpng > graph.png
+
+- tflint: https://github.com/terraform-linters/tflint
+    
+    This is a Terraform linter which can detect problems with non structural
+    AWS code that the default Terraform 'validate' command won't catch.    
+
+- kitchen: https://github.com/newcontext-oss/kitchen-terraform
+
+   This package allows the running of Terraform Kitchen based test suites
+   which use InSpec and orchestrate the required Terraform commands to
+   perform them.
+
+   Useful commands - note that a valid Terraform Kitchen project structure
+   must exist for these to work:
+
+   1. Converge your current project ready to run validation:
+      $> kitchen converge
+
+   2. Run the Kitchen verification test suites in the project:
+      $> kitchen verify
+
+   3. Destroy the Kitchen test session:
+      $> kitchen destroy
+
+ - End of help -
+ 

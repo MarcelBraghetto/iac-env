@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+less /opt/iac-env/iac-env-help.txt

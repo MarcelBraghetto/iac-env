@@ -1,0 +1,26 @@
+---
+# https://newcontext-oss.github.io/kitchen-terraform/getting_started.html
+
+# https://www.rubydoc.info/github/newcontext-oss/kitchen-terraform/Kitchen/Driver/Terraform
+driver:
+  name: terraform
+  root_module_directory: test/fixtures/terraform_fixture_module
+
+# https://www.rubydoc.info/github/newcontext-oss/kitchen-terraform/Kitchen/Provisioner/Terraform
+provisioner:
+  name: terraform
+
+# https://www.rubydoc.info/github/newcontext-oss/kitchen-terraform/Kitchen/Verifier/Terraform
+verifier:
+  name: terraform
+  systems:
+    - name: basic
+      backend: local
+      controls:
+        - file_check
+
+platforms:
+  - name: terraform
+
+suites:
+  - name: kitchen_integration_suite

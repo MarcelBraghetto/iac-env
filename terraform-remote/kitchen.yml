@@ -1,0 +1,21 @@
+---
+driver:
+  name: terraform
+  root_module_directory: test/fixture
+
+provisioner:
+  name: terraform
+
+verifier:
+  name: terraform
+  systems:
+    - name: aws
+      backend: aws
+      controls:
+        - verify_remote_state_s3_bucket
+
+platforms:
+  - name: terraform
+
+suites:
+  - name: default

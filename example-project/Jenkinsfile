@@ -1,0 +1,95 @@
+final def IS_PULL_REQUEST_BUILD = env.BRANCH_NAME.startsWith('PR-')
+final def IS_MASTER_BUILD = env.BRANCH_NAME == 'master'
+final def DOCKER_IMAGE_NAME = 'iac-env:latest'
+final def DOCKER_IMAGE_ARGS = '-it'
+
+pipeline {
+    agent none
+
+    stages {
+        stage("Start: Verification") {
+            agent { docker image: DOCKER_IMAGE_NAME, args: DOCKER_IMAGE_ARGS }
+
+            environment {
+                TF_IN_AUTOMATION = 'TF_IN_AUTOMATION'
+            }
+
+            stages {
+                stage("Basic Validation") { steps {
+                    sh 'terraform fmt -check -recursive -list=true -diff'
+                    sh 'tflint'
+                    sh 'terraform init -input=false'
+                    sh 'terraform plan -out=tfplan -input=false'
+                    sh 'terraform validate'
+                    sh 'terraform graph | dot -Tpng > terraform-graph.png'
+                    archiveArtifacts artifacts: 'terraform-graph.png'
+                }}
+
+                stage("Integration Tests") {
+                    when { expression { IS_PULL_REQUEST_BUILD || IS_MASTER_BUILD } }
+
+                    steps {
+                        sh 'kitchen verify'
+                    }
+
+                    post {
+                        always {
+                            sh 'kitchen destroy'
+                        }
+                    }
+                }
+
+                stage("End: Verification") { steps {
+                    milestone(label: 'End: Verification', ordinal: 1)
+                }}
+            }
+
+            post {
+                cleanup {
+                    cleanWs()
+                }
+            }
+        }
+
+        stage("Publish Approval") {
+            when { expression { IS_MASTER_BUILD } }
+
+            steps {
+                input message: "Deploy these changes?"
+            }
+        }
+
+        stage("Start: Publish") {
+            when { expression { IS_MASTER_BUILD } }
+
+            agent { docker image: DOCKER_IMAGE_NAME, args: DOCKER_IMAGE_ARGS }
+            
+            environment {
+                TF_IN_AUTOMATION = 'TF_IN_AUTOMATION'
+            }
+            
+            stages {
+                stage("Deploy") {
+                    steps {
+                        milestone(label: 'Deployment started', ordinal: 2)
+                        sh 'terraform init -input=false'
+                        sh 'terraform plan -out=tfplan -input=false'
+                        sh 'terraform apply -input=false tfplan'
+                    }
+                }
+
+                stage ("End: Publish") {
+                    steps {
+                        milestone(label: 'Deployment complete', ordinal: 3)
+                    }
+                }
+            }
+            
+            post {
+                cleanup {
+                    cleanWs()
+                }
+            }
+        }
+    }
+}

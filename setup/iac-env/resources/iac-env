@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+docker run \
+    --rm \
+    --interactive \
+    --tty \
+    --network iac-env \
+    --user $(id -u):$(id -g) \
+    --volume /etc/passwd:/etc/passwd:ro \
+    --volume /etc/group:/etc/group:ro \
+    --volume "$HOME":"$HOME" \
+    --volume "$(pwd)":/iac-env \
+    --workdir=/iac-env \
+    --env USER \
+    --env HOME \
+    --env AWS_ACCESS_KEY_ID \
+    --env AWS_SECRET_ACCESS_KEY \
+    --env AWS_DEFAULT_REGION \
+    iac-env:latest
